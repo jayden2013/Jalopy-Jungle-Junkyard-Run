@@ -535,6 +535,9 @@ while True:
             pygame.display.flip()
             continue
         else:
+            # remove existing boss if one exists so it doesn't freeze in placeholder
+            if boss:
+                boss.kill()
             boss = SuperBoomer()
             all_sprites.add(boss)
             boss_warning_start = None
