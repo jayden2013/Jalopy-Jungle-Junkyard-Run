@@ -45,10 +45,21 @@ SPEEDBOOST_SPAWN_CHANCE   = 0.2
 SPEEDBOOST_DURATION       = 10000
 SPEEDBOOST_MULTIPLIER     = 2.0
 
+# Super Boomer boss settings
+BOSS_SPAWN_COUNT       = 1       # every 7 deliveries
+WARNING_DURATION       = 1000    # ms of "SUPER BOOMER!" warning
+BOSS_CHARGE_TIME       = 3000    # ms to charge before sprint
+BOSS_SPRINT_SPEED      = 10      # px per frame
+BOSS_PURSUIT_SPEED     = 1
+BOSS_CHAIR_INTERVAL    = 2000    # ms between boss chair throws
+BOSS_HIT_POINTS        = 5       # hits to kill boss
+
 # Colors
 BG_COLOR         = (50, 50, 50)
 TEXT_COLOR       = (255, 255, 255)
 LONG_LINE_COLOR  = (255, 50, 50)
+BOSS_BAR_BG      = (100, 0, 0)
+BOSS_BAR_FILL    = (255, 0, 0)
 # ─────────────────────────────────────────────────────────────────────────────
 
 pygame.init()
@@ -103,21 +114,30 @@ PLAYER_IMAGE = pygame.transform.scale(PLAYER_IMAGE, (30,30))
 
 THIEF_IMAGE = pygame.image.load("assets/thief.png").convert_alpha()
 THIEF_IMAGE = pygame.transform.scale(THIEF_IMAGE, (30,30))
+
+SUPERBOOMER_IMAGE = pygame.image.load("assets/super_boomer.png").convert_alpha()
+SUPERBOOMER_IMAGE = pygame.transform.scale(SUPERBOOMER_IMAGE, (80,80))
 # ─────────────────────────────────────────────────────────────────────────────
 
 def normalize(vx, vy):
     dist = math.hypot(vx, vy)
     return (vx/dist, vy/dist) if dist else (0,0)
 
-delay_event         = None
-current_carried_img = None
-delivered           = 0
-game_over           = False
-last_chair_drop     = pygame.time.get_ticks()
-last_boom_spawn     = pygame.time.get_ticks()
-last_speed_spawn    = pygame.time.get_ticks()
-respawns            = []
+# ─── Globals ─────────────────────────────────────────────────────────────────
+delay_event           = None
+current_carried_img   = None
+delivered             = 0
+game_over             = False
+last_chair_drop       = pygame.time.get_ticks()
+last_boom_spawn       = pygame.time.get_ticks()
+last_speed_spawn      = pygame.time.get_ticks()
+respawns              = []
 
+# Boss state
+boss                  = None
+boss_warning_start    = None
+
+# placeholder groups
 parts                 = None
 enemies               = None
 thieves               = None
@@ -126,6 +146,7 @@ boomerangs            = None
 boomerang_projectiles = None
 speed_items           = None
 all_sprites           = None
+# ─────────────────────────────────────────────────────────────────────────────
 
 # ─── Game Objects ────────────────────────────────────────────────────────────
 class Player(pygame.sprite.Sprite):
@@ -305,11 +326,21 @@ class BoomerangProjectile(pygame.sprite.Sprite):
              self.control*2*(1-self.t)*self.t +
              self.end*self.t**2)
         self.rect.center = (round(p.x), round(p.y))
+
+        # hit regular enemies
         hit = pygame.sprite.spritecollideany(self, enemies,
                                             pygame.sprite.collide_mask)
         if hit:
             hit.kill()
             respawns.append(now + BOOMERANG_RESPAWN_DELAY)
+        # hit boss?
+        global boss
+        if boss and pygame.sprite.collide_mask(self, boss):
+            boss.health -= 1
+            self.kill()
+            if boss.health <= 0:
+                boss.kill()
+                boss = None
 
 class SpeedBoostItem(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -322,15 +353,83 @@ class SpeedBoostItem(pygame.sprite.Sprite):
         pygame.draw.circle(self.glow, (255,150,0,120),
                            (glow_r,glow_r),glow_r)
 
+class SuperBoomer(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = SUPERBOOMER_IMAGE
+        self.rect  = self.image.get_rect(center=(WIDTH//2, HEIGHT//2))
+        self.mask  = pygame.mask.from_surface(self.image)
+        self.health          = BOSS_HIT_POINTS
+        self.state           = "charging"
+        self.state_start     = pygame.time.get_ticks()
+        self.last_chair_throw= pygame.time.get_ticks()
+        self.sprint_dir = (0,0)
+        self.sprint_target = None
+    def update(self):
+        now = pygame.time.get_ticks()
+
+        # State machine for charging, sprinting, and pursuit
+        if self.state == "charging":
+            # After charge time, begin sprint attack
+            if now - self.state_start >= BOSS_CHARGE_TIME:
+                # lock onto player's position
+                px, py = player.rect.center
+                dx = px - self.rect.centerx
+                dy = py - self.rect.centery
+                dir_x, dir_y = normalize(dx, dy)
+                self.sprint_dir    = (dir_x, dir_y)
+                self.sprint_target = (px, py)
+                self.state = "sprinting"
+                self.state_start = now
+
+        elif self.state == "sprinting":
+            # sprint along locked direction
+            self.rect.x += self.sprint_dir[0] * BOSS_SPRINT_SPEED
+            self.rect.y += self.sprint_dir[1] * BOSS_SPRINT_SPEED
+            # clamp on-screen
+            self.rect.x = max(0, min(self.rect.x, WIDTH - self.rect.width))
+            self.rect.y = max(0, min(self.rect.y, HEIGHT - self.rect.height))
+            # check if reached target
+            tx, ty = self.sprint_target
+            if math.hypot(self.rect.centerx - tx, self.rect.centery - ty) < BOSS_SPRINT_SPEED:
+                self.state       = "pursuing"
+                self.state_start = now
+
+        elif self.state == "pursuing":
+            # Move toward the player
+            dx = player.rect.centerx - self.rect.centerx
+            dy = player.rect.centery - self.rect.centery
+            dist = math.hypot(dx, dy)
+            if dist != 0:
+                self.rect.x += BOSS_PURSUIT_SPEED * dx / dist
+                self.rect.y += BOSS_PURSUIT_SPEED * dy / dist
+            # Clamp inside screen bounds
+            self.rect.x = max(0, min(self.rect.x, WIDTH - self.rect.width))
+            self.rect.y = max(0, min(self.rect.y, HEIGHT - self.rect.height))
+            # After cooldown, go back to charging for the next attack
+            if now - self.state_start >= BOSS_CHARGE_TIME:
+                self.state = "charging"
+                self.state_start = now
+
+        # Continue throwing chairs on interval
+        if now - self.last_chair_throw >= BOSS_CHAIR_INTERVAL:
+            c = Chair(self.rect.center)
+            chairs.add(c)
+            all_sprites.add(c)
+            self.last_chair_throw = now
+
 # ─── Handlers ─────────────────────────────────────────────────────────────────
 def handle_delivery():
-    global delivered, delay_event, current_carried_img
+    global delivered, delay_event, current_carried_img, boss_warning_start
     delivered += 1
     if delivered % 10 == 0:
         tx = random.randint(50, WIDTH-50)
         ty = random.randint(50, HEIGHT-50)
         new_thief = Thief((tx,ty))
         thieves.add(new_thief); all_sprites.add(new_thief)
+    # trigger boss warning
+    if delivered % BOSS_SPAWN_COUNT == 0:
+        boss_warning_start = pygame.time.get_ticks()
     delay_event         = None
     current_carried_img = None
     player.carrying     = False
@@ -344,6 +443,7 @@ def reset_game():
     global boomerangs, boomerang_projectiles, speed_items, all_sprites
     global delivered, game_over, delay_event, current_carried_img
     global last_chair_drop, last_boom_spawn, last_speed_spawn, respawns
+    global boss, boss_warning_start
 
     delivered            = 0
     game_over            = False
@@ -353,6 +453,9 @@ def reset_game():
     last_boom_spawn      = pygame.time.get_ticks()
     last_speed_spawn     = pygame.time.get_ticks()
     respawns.clear()
+
+    boss                 = None
+    boss_warning_start   = None
 
     player.carrying        = False
     player.has_boomerang   = False
@@ -428,7 +531,21 @@ while True:
         pygame.display.flip()
         continue
 
-    # ── Update ────────────────────────────────────────────────────────────────
+    # ── Super Boomer warning & spawn ─────────────────────────────────────────
+    if boss_warning_start is not None:
+        if now - boss_warning_start < WARNING_DURATION:
+            screen.fill((0,0,0))
+            warning = font.render("SUPER BOOMER!", True, (255,0,0))
+            wx = (WIDTH - warning.get_width())//2
+            screen.blit(warning, (wx, HEIGHT//2 - warning.get_height()//2))
+            pygame.display.flip()
+            continue
+        else:
+            boss = SuperBoomer()
+            all_sprites.add(boss)
+            boss_warning_start = None
+
+    # ── Game Update ──────────────────────────────────────────────────────────
     if not game_over:
         keys    = pygame.key.get_pressed()
         old_pos = player.rect.topleft
@@ -441,6 +558,10 @@ while True:
         if pygame.sprite.spritecollideany(player, thieves,
                                           pygame.sprite.collide_mask):
             player.rect.topleft = old_pos
+
+        # boss collision = death
+        if boss and pygame.sprite.collide_mask(player, boss):
+            game_over = True
 
         # thief-steal fallback with mask
         for t in thieves:
@@ -491,7 +612,6 @@ while True:
             t.update()
 
         # pickup parts
-        hit = None
         if not player.carrying:
             hit = pygame.sprite.spritecollideany(player, parts,
                                                 pygame.sprite.collide_mask)
@@ -523,7 +643,6 @@ while True:
                 boomerangs.add(b); all_sprites.add(b)
             last_boom_spawn = now
 
-        hit_b = None
         if not player.has_boomerang and not boomerang_projectiles:
             hit_b = pygame.sprite.spritecollideany(player, boomerangs,
                                                   pygame.sprite.collide_mask)
@@ -563,6 +682,10 @@ while True:
                 enemies.add(new_e); all_sprites.add(new_e)
                 respawns.remove(ts)
 
+        # update boss
+        if boss:
+            boss.update()
+
         # game over
         if pygame.sprite.spritecollideany(player, enemies,
                                           pygame.sprite.collide_mask):
@@ -599,6 +722,15 @@ while True:
         py = player.rect.top - current_carried_img.get_height() - 5
         screen.blit(current_carried_img, (px, py))
 
+    # draw boss health bar
+    if boss:
+        bar_w, bar_h = 200, 20
+        bx = (WIDTH - bar_w)//2
+        by = HEIGHT - bar_h - 10
+        pygame.draw.rect(screen, BOSS_BAR_BG, (bx,by,bar_w,bar_h))
+        fill = int(bar_w * boss.health / BOSS_HIT_POINTS)
+        pygame.draw.rect(screen, BOSS_BAR_FILL, (bx,by,fill,bar_h))
+
     hud = font.render(f"Score: {delivered}", True, TEXT_COLOR)
     screen.blit(hud, (10,10))
 
@@ -621,10 +753,10 @@ while True:
         mx = WIDTH//2 - msg.get_width()//2
         my = HEIGHT//2 - msg.get_height()//2
         screen.blit(msg, (mx, my))
-        bx, by = WIDTH//2-150, my+msg.get_height()+10
-        pygame.draw.rect(screen,(100,100,100),(bx, by, 300,20))
+        bx2, by2 = WIDTH//2-150, my+msg.get_height()+10
+        pygame.draw.rect(screen,(100,100,100),(bx2, by2, 300,20))
         prog = min(1, elapsed/WAIT_TIME)
-        pygame.draw.rect(screen,LONG_LINE_COLOR,(bx,by,300*prog,20))
+        pygame.draw.rect(screen,LONG_LINE_COLOR,(bx2,by2,300*prog,20))
 
     if game_over:
         over = font.render("Game Over! You got caught! Press ENTER to restart.",
