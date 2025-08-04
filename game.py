@@ -14,36 +14,36 @@ ENEMY_SPEED                  = 2
 MIN_ENEMY_SEPARATION         = 40    # pixels between regular enemies
 
 # Thief settings
-THIEF_SPEED      = 1        # slower than regular enemies
-THIEF_DROP_MIN   = 3000     # ms before dropping a stolen part
-THIEF_DROP_MAX   = 30000    # ms before dropping a stolen part
-THIEF_COOLDOWN   = 500      # ms after drop before able to re-steal
+THIEF_SPEED      = 1
+THIEF_DROP_MIN   = 3000
+THIEF_DROP_MAX   = 30000
+THIEF_COOLDOWN   = 500
 
 # Long-line settings
 LINE_PROBABILITY   = 0.5
-WAIT_TIME          = 1200    # ms before able to deliver or leave & return
-COME_BACK_DELAY    = 5000    # ms long-line max wait
+WAIT_TIME          = 1200
+COME_BACK_DELAY    = 5000
 
 # Chair drop settings
-CHAIR_DROP_INTERVAL   = 10000  # ms between chair-drop waves
-CHAIR_DROP_CHANCE     = 0.5    # each enemy has 50% chance to drop
-CHAIR_INVINCIBILITY   = 2000   # ms chairs are invincible after being placed
+CHAIR_DROP_INTERVAL   = 10000
+CHAIR_DROP_CHANCE     = 0.5
+CHAIR_INVINCIBILITY   = 2000
 
-# Chair highlight settings
+# Chair highlight
 CHAIR_GLOW_RADIUS     = 25
-CHAIR_GLOW_COLOR      = (255, 255, 0, 100)   # yellow, semi-transparent
+CHAIR_GLOW_COLOR      = (255, 255, 0, 100)
 
 # Boomerang settings
-BOOMERANG_SPAWN_INTERVAL = 20000   # ms between spawn attempts
-BOOMERANG_SPAWN_CHANCE   = 0.3     # 30% chance each interval
-BOOMERANG_RESPAWN_DELAY  = 10000   # ms before a hit enemy respawns
-BOOMERANG_SPEED          = 0.015   # controls flight & return speed
+BOOMERANG_SPAWN_INTERVAL = 20000
+BOOMERANG_SPAWN_CHANCE   = 0.3
+BOOMERANG_RESPAWN_DELAY  = 10000
+BOOMERANG_SPEED          = 0.015
 
 # Speed-boost settings
-SPEEDBOOST_SPAWN_INTERVAL = 30000   # ms between spawn attempts
-SPEEDBOOST_SPAWN_CHANCE   = 0.2     # 20% chance each interval
-SPEEDBOOST_DURATION       = 10000   # ms boost lasts
-SPEEDBOOST_MULTIPLIER     = 2.0     # speed × multiplier
+SPEEDBOOST_SPAWN_INTERVAL = 30000
+SPEEDBOOST_SPAWN_CHANCE   = 0.2
+SPEEDBOOST_DURATION       = 10000
+SPEEDBOOST_MULTIPLIER     = 2.0
 
 # Colors
 BG_COLOR         = (50, 50, 50)
@@ -56,26 +56,22 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock  = pygame.time.Clock()
 font   = pygame.font.SysFont(None, 36)
 
-# ─── Star Wars–style Intro ───────────────────────────────────────────────────
+# ─── Intro ────────────────────────────────────────────────────────────────────
 intro_font  = pygame.font.SysFont(None, 24, bold=True)
 intro_lines = [
-    "A long time ago, in a junkyard far, far away...",
-    "",
+    "A long time ago, in a junkyard far, far away...", "",
     "You are the last guardian of the pristine MN12 Thunderbird.",
-    "Its polished panels gleam in the dusty sunlight.",
-    "",
+    "Its polished panels gleam in the dusty sunlight.", "",
     "But the Boomers, with their rusty relics, plot to seize its parts",
-    "to fuel their sloppy rebuilds of their undead Thunderbirds.",
-    "",
+    "to fuel their sloppy rebuilds of their undead Thunderbirds.", "",
     "Time is short. Scour the yard, collect the parts,",
-    "and assemble the final masterpiece",
-    "before they strike!",
-    "",
+    "and assemble the final masterpiece", "before they strike!", "",
     "Press ENTER to begin..."
 ]
-intro_surfs  = [intro_font.render(line, True, (255, 255, 0)) for line in intro_lines]
+intro_surfs  = [intro_font.render(line, True, (255,255,0))
+                for line in intro_lines]
 scroll_y     = HEIGHT
-scroll_speed = 0.05  # pixels per ms
+scroll_speed = 0.05
 state_intro  = True
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -87,35 +83,28 @@ PART_IMAGE_FILES = ["assets/part1.png", "assets/part2.png", "assets/part3.png"]
 part_textures    = []
 for fn in PART_IMAGE_FILES:
     tex = pygame.image.load(fn).convert_alpha()
-    tex = pygame.transform.scale(tex, (20, 20))
+    tex = pygame.transform.scale(tex, (20,20))
     part_textures.append(tex)
 
-# load chair PNG
 CHAIR_IMAGE = pygame.image.load("assets/chair.png").convert_alpha()
-CHAIR_IMAGE = pygame.transform.scale(CHAIR_IMAGE, (20, 20))
+CHAIR_IMAGE = pygame.transform.scale(CHAIR_IMAGE, (20,20))
 
-# load boomerang PNG
 BOOMERANG_IMAGE = pygame.image.load("assets/boomerang.png").convert_alpha()
-BOOMERANG_IMAGE = pygame.transform.scale(BOOMERANG_IMAGE, (20, 20))
+BOOMERANG_IMAGE = pygame.transform.scale(BOOMERANG_IMAGE, (20,20))
 
-# load enemy sprite
 ENEMY_IMAGE = pygame.image.load("assets/enemy.png").convert_alpha()
-ENEMY_IMAGE = pygame.transform.scale(ENEMY_IMAGE, (30, 30))
+ENEMY_IMAGE = pygame.transform.scale(ENEMY_IMAGE, (30,30))
 
-# load NOS speed-boost icon
 NOS_IMAGE = pygame.image.load("assets/nos.png").convert_alpha()
-NOS_IMAGE = pygame.transform.scale(NOS_IMAGE, (20, 20))
+NOS_IMAGE = pygame.transform.scale(NOS_IMAGE, (20,20))
 
-# load player sprite
 PLAYER_IMAGE = pygame.image.load("assets/player.png").convert_alpha()
-PLAYER_IMAGE = pygame.transform.scale(PLAYER_IMAGE, (30, 30))
+PLAYER_IMAGE = pygame.transform.scale(PLAYER_IMAGE, (30,30))
 
-# load thief sprite
 THIEF_IMAGE = pygame.image.load("assets/thief.png").convert_alpha()
-THIEF_IMAGE = pygame.transform.scale(THIEF_IMAGE, (30, 30))
+THIEF_IMAGE = pygame.transform.scale(THIEF_IMAGE, (30,30))
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ─── Helpers & Globals ────────────────────────────────────────────────────────
 def normalize(vx, vy):
     dist = math.hypot(vx, vy)
     return (vx/dist, vy/dist) if dist else (0,0)
@@ -129,7 +118,6 @@ last_boom_spawn     = pygame.time.get_ticks()
 last_speed_spawn    = pygame.time.get_ticks()
 respawns            = []
 
-# placeholder globals for sprite groups
 parts                 = None
 enemies               = None
 thieves               = None
@@ -138,7 +126,6 @@ boomerangs            = None
 boomerang_projectiles = None
 speed_items           = None
 all_sprites           = None
-# ──────────────────────────────────────────────────────────────────────────────
 
 # ─── Game Objects ────────────────────────────────────────────────────────────
 class Player(pygame.sprite.Sprite):
@@ -146,6 +133,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.image = PLAYER_IMAGE
         self.rect  = self.image.get_rect(center=(WIDTH//2, HEIGHT//2))
+        self.mask  = pygame.mask.from_surface(self.image)
         self.carrying         = False
         self.has_boomerang    = False
         self.speed_multiplier = 1.0
@@ -156,43 +144,40 @@ class Player(pygame.sprite.Sprite):
         if now > self.boost_end_time:
             self.speed_multiplier = 1.0
         speed = PLAYER_SPEED * self.speed_multiplier
-
         dx = dy = 0
         if keys[pygame.K_LEFT]:   dx = -speed
         if keys[pygame.K_RIGHT]:  dx =  speed
         if keys[pygame.K_UP]:      dy = -speed
         if keys[pygame.K_DOWN]:    dy =  speed
-
         self.rect.x = max(0, min(WIDTH-self.rect.w, self.rect.x + dx))
         self.rect.y = max(0, min(HEIGHT-self.rect.h, self.rect.y + dy))
-
 
 class Part(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = random.choice(part_textures)
         self.rect  = self.image.get_rect(center=pos)
+        self.mask  = pygame.mask.from_surface(self.image)
         self.forbidden_thief = None
         glow_r = 20
-        self.glow = pygame.Surface((glow_r*2, glow_r*2), pygame.SRCALPHA)
+        self.glow = pygame.Surface((glow_r*2,glow_r*2), pygame.SRCALPHA)
         pygame.draw.circle(self.glow, (255,255,0,100),
-                           (glow_r, glow_r), glow_r)
-
+                           (glow_r,glow_r), glow_r)
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = ENEMY_IMAGE
         self.rect  = self.image.get_rect(center=pos)
-
+        self.mask  = pygame.mask.from_surface(self.image)
 
 class Thief(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = THIEF_IMAGE
         self.rect  = self.image.get_rect(center=pos)
-
-        angle               = random.uniform(0, 2*math.pi)
+        self.mask  = pygame.mask.from_surface(self.image)
+        angle       = random.uniform(0,2*math.pi)
         self.direction      = (math.cos(angle), math.sin(angle))
         self.carrying       = False
         self.carried_image  = None
@@ -201,12 +186,11 @@ class Thief(pygame.sprite.Sprite):
 
     def update(self):
         now = pygame.time.get_ticks()
-
-        # Drop logic
         if self.carrying and now >= self.drop_time:
             dropped = Part(self.rect.center)
             dropped.image           = self.carried_image
             dropped.rect            = dropped.image.get_rect(center=self.rect.center)
+            dropped.mask            = pygame.mask.from_surface(dropped.image)
             dropped.forbidden_thief = self
             parts.add(dropped); all_sprites.add(dropped)
             self.carrying           = False
@@ -215,32 +199,29 @@ class Thief(pygame.sprite.Sprite):
             self.cooldown_until     = now + THIEF_COOLDOWN
             return
 
-        # Steal logic
         if now >= self.cooldown_until and not self.carrying:
-            if player.carrying and self.rect.colliderect(player.rect):
+            if player.carrying and pygame.sprite.collide_mask(self, player):
                 self.carrying      = True
                 self.carried_image = current_carried_img
                 player.carrying    = False
-                self.drop_time     = now + random.randint(THIEF_DROP_MIN, THIEF_DROP_MAX)
+                self.drop_time     = now + random.randint(THIEF_DROP_MIN,THIEF_DROP_MAX)
             else:
                 for p in parts:
                     if p.forbidden_thief is self: continue
-                    if self.rect.colliderect(p.rect):
+                    if pygame.sprite.collide_mask(self, p):
                         self.carrying      = True
                         self.carried_image = p.image
                         p.kill()
-                        self.drop_time     = now + random.randint(THIEF_DROP_MIN, THIEF_DROP_MAX)
+                        self.drop_time     = now + random.randint(THIEF_DROP_MIN,THIEF_DROP_MAX)
                         break
 
-        # Movement
         if not self.carrying:
             candidates = [p for p in parts if p.forbidden_thief is not self]
             if candidates:
                 target = min(candidates,
-                             key=lambda p: (p.rect.centerx - self.rect.centerx)**2
-                                         + (p.rect.centery - self.rect.centery)**2)
-                dx, dy = (target.rect.centerx - self.rect.centerx,
-                          target.rect.centery  - self.rect.centery)
+                             key=lambda p: (p.rect.centerx-self.rect.centerx)**2
+                                         + (p.rect.centery-self.rect.centery)**2)
+                dx, dy = target.rect.centerx-self.rect.centerx, target.rect.centery-self.rect.centery
                 dir_x, dir_y = normalize(dx, dy)
             else:
                 dir_x, dir_y = self.direction
@@ -249,17 +230,15 @@ class Thief(pygame.sprite.Sprite):
 
         self.rect.x += dir_x * THIEF_SPEED
         self.rect.y += dir_y * THIEF_SPEED
-
         bounced = False
         if self.rect.left < 0 or self.rect.right > WIDTH:
             dir_x = -dir_x; bounced = True
         if self.rect.top < 0 or self.rect.bottom > HEIGHT:
             dir_y = -dir_y; bounced = True
-        if bounced or random.random() < 0.02:
-            ang = random.uniform(0, 2*math.pi)
+        if bounced or random.random()<0.02:
+            ang = random.uniform(0,2*math.pi)
             dir_x, dir_y = math.cos(ang), math.sin(ang)
         self.direction = (dir_x, dir_y)
-
 
 class Cashier(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -267,47 +246,47 @@ class Cashier(pygame.sprite.Sprite):
         self.image = pygame.Surface((30,30), pygame.SRCALPHA)
         self.rect  = self.image.get_rect(center=pos)
 
-
 class Chair(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = CHAIR_IMAGE
         self.rect  = self.image.get_rect(center=pos)
+        self.mask  = pygame.mask.from_surface(self.image)
         self.spawn_time = pygame.time.get_ticks()
-        self.glow = pygame.Surface((CHAIR_GLOW_RADIUS*2, CHAIR_GLOW_RADIUS*2),
+        self.glow = pygame.Surface((CHAIR_GLOW_RADIUS*2,CHAIR_GLOW_RADIUS*2),
                                    pygame.SRCALPHA)
         pygame.draw.circle(self.glow, CHAIR_GLOW_COLOR,
-                           (CHAIR_GLOW_RADIUS, CHAIR_GLOW_RADIUS),
+                           (CHAIR_GLOW_RADIUS,CHAIR_GLOW_RADIUS),
                            CHAIR_GLOW_RADIUS)
-
 
 class BoomerangItem(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = BOOMERANG_IMAGE
         self.rect  = self.image.get_rect(center=pos)
+        self.mask  = pygame.mask.from_surface(self.image)
         glow_r = 25
-        self.glow = pygame.Surface((glow_r*2, glow_r*2), pygame.SRCALPHA)
+        self.glow = pygame.Surface((glow_r*2,glow_r*2),pygame.SRCALPHA)
         pygame.draw.circle(self.glow, CHAIR_GLOW_COLOR,
-                           (glow_r, glow_r), glow_r)
-
+                           (glow_r,glow_r), glow_r)
 
 class BoomerangProjectile(pygame.sprite.Sprite):
     def __init__(self, start_pos):
         super().__init__()
         self.image = BOOMERANG_IMAGE
         self.rect  = self.image.get_rect(center=start_pos)
-        self.start    = pygame.math.Vector2(start_pos)
-        self.end      = pygame.math.Vector2(start_pos)
-        mx, my       = pygame.mouse.get_pos()
-        dirv         = pygame.math.Vector2(mx, my) - self.start
-        if dirv.length() == 0:
+        self.mask  = pygame.mask.from_surface(self.image)
+        self.start   = pygame.math.Vector2(start_pos)
+        self.end     = pygame.math.Vector2(start_pos)
+        mx, my      = pygame.mouse.get_pos()
+        dirv        = pygame.math.Vector2(mx,my)-self.start
+        if dirv.length()==0:
             dirv = pygame.math.Vector2(1,0)
-        dirv         = dirv.normalize() * 150
-        self.control = self.start + dirv + pygame.math.Vector2(0, -75)
-        self.t        = 0.0
-        self.speed    = BOOMERANG_SPEED
-        self.returning = False
+        dirv        = dirv.normalize()*150
+        self.control = self.start + dirv + pygame.math.Vector2(0,-75)
+        self.t       = 0.0
+        self.speed   = BOOMERANG_SPEED
+        self.returning=False
 
     def update(self):
         now = pygame.time.get_ticks()
@@ -315,53 +294,50 @@ class BoomerangProjectile(pygame.sprite.Sprite):
             self.t += self.speed
             if self.t >= 1.0:
                 self.t        = 1.0
-                self.returning = True
+                self.returning=True
         else:
             self.t -= self.speed
             if self.t <= 0.0:
                 self.kill()
                 return
 
-        p = (self.start * (1-self.t)**2 +
-             self.control * 2*(1-self.t)*self.t +
-             self.end * self.t**2)
+        p = (self.start*(1-self.t)**2 +
+             self.control*2*(1-self.t)*self.t +
+             self.end*self.t**2)
         self.rect.center = (round(p.x), round(p.y))
-
-        hit = pygame.sprite.spritecollideany(self, enemies)
+        hit = pygame.sprite.spritecollideany(self, enemies,
+                                            pygame.sprite.collide_mask)
         if hit:
             hit.kill()
             respawns.append(now + BOOMERANG_RESPAWN_DELAY)
-
 
 class SpeedBoostItem(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = NOS_IMAGE
         self.rect  = self.image.get_rect(center=pos)
+        self.mask  = pygame.mask.from_surface(self.image)
         glow_r = 25
-        self.glow = pygame.Surface((glow_r*2, glow_r*2), pygame.SRCALPHA)
+        self.glow = pygame.Surface((glow_r*2,glow_r*2),pygame.SRCALPHA)
         pygame.draw.circle(self.glow, (255,150,0,120),
-                           (glow_r, glow_r), glow_r)
-# ──────────────────────────────────────────────────────────────────────────────
+                           (glow_r,glow_r),glow_r)
 
+# ─── Handlers ─────────────────────────────────────────────────────────────────
 def handle_delivery():
     global delivered, delay_event, current_carried_img
     delivered += 1
     if delivered % 10 == 0:
         tx = random.randint(50, WIDTH-50)
         ty = random.randint(50, HEIGHT-50)
-        new_thief = Thief((tx, ty))
+        new_thief = Thief((tx,ty))
         thieves.add(new_thief); all_sprites.add(new_thief)
-
     delay_event         = None
     current_carried_img = None
     player.carrying     = False
-
     x = random.randint(50, WIDTH-150)
     y = random.randint(50, HEIGHT-150)
     p = Part((x,y)); parts.add(p); all_sprites.add(p)
     e = Enemy((WIDTH-15,15)); enemies.add(e); all_sprites.add(e)
-
 
 def reset_game():
     global parts, enemies, thieves, chairs
@@ -398,7 +374,7 @@ def reset_game():
         while True:
             ex = random.randint(50, WIDTH-50)
             ey = random.randint(50, HEIGHT-50)
-            if math.hypot(ex - WIDTH//2, ey - HEIGHT//2) > safe_dist:
+            if math.hypot(ex-WIDTH//2, ey-HEIGHT//2) > safe_dist:
                 break
         e = Enemy((ex,ey)); enemies.add(e); all_sprites.add(e)
 
@@ -412,18 +388,16 @@ def reset_game():
     boomerang_projectiles  = pygame.sprite.Group()
     speed_items            = pygame.sprite.Group()
 
-    # spawn initial boomerang
     bx = random.randint(50, WIDTH-50)
     by = random.randint(50, HEIGHT-50)
     b  = BoomerangItem((bx,by))
     boomerangs.add(b); all_sprites.add(b)
 
-# initialize everything
+# ─── Init & Loop ───────────────────────────────────────────────────────────────
 player  = Player()
 cashier = Cashier((20, HEIGHT-20))
 reset_game()
 
-# ─── Main Loop ───────────────────────────────────────────────────────────────
 while True:
     dt  = clock.tick(FPS)
     now = pygame.time.get_ticks()
@@ -447,42 +421,46 @@ while True:
         screen.fill((0,0,0))
         for i, surf in enumerate(intro_surfs):
             x = (WIDTH - surf.get_width()) // 2
-            y = scroll_y + i * 30
-            screen.blit(surf, (x, y))
+            y = scroll_y + i*30
+            screen.blit(surf, (x,y))
         if scroll_y + len(intro_surfs)*30 < 0:
             state_intro = False
         pygame.display.flip()
         continue
 
-    # ── Game Update ──────────────────────────────────────────────────────────
+    # ── Update ────────────────────────────────────────────────────────────────
     if not game_over:
         keys    = pygame.key.get_pressed()
         old_pos = player.rect.topleft
         player.update(keys)
 
-        if pygame.sprite.spritecollideany(player, chairs):
+        # block through chairs/thieves using pixel masks
+        if pygame.sprite.spritecollideany(player, chairs,
+                                          pygame.sprite.collide_mask):
             player.rect.topleft = old_pos
-        if pygame.sprite.spritecollideany(player, thieves):
+        if pygame.sprite.spritecollideany(player, thieves,
+                                          pygame.sprite.collide_mask):
             player.rect.topleft = old_pos
 
+        # thief-steal fallback with mask
         for t in thieves:
             if (player.carrying and not t.carrying
-                and player.rect.colliderect(t.rect)):
+                and pygame.sprite.collide_mask(player, t)):
                 t.carrying      = True
                 t.carried_image = current_carried_img
                 player.carrying = False
                 current_carried_img = None
-                t.drop_time = now + random.randint(THIEF_DROP_MIN, THIEF_DROP_MAX)
+                t.drop_time = now + random.randint(THIEF_DROP_MIN,THIEF_DROP_MAX)
 
+        # update enemies & clear chairs
         for e in enemies:
-            dx, dy = player.rect.centerx - e.rect.centerx, player.rect.centery - e.rect.centery
+            dx, dy = player.rect.centerx-e.rect.centerx, player.rect.centery-e.rect.centery
             nx, ny = normalize(dx, dy)
             mvx, mvy = nx*ENEMY_SPEED, ny*ENEMY_SPEED
-
             sx = sy = 0
             for o in enemies:
                 if o is not e:
-                    dx2, dy2 = e.rect.centerx - o.rect.centerx, e.rect.centery - o.rect.centery
+                    dx2, dy2 = e.rect.centerx-o.rect.centerx, e.rect.centery-o.rect.centery
                     d = math.hypot(dx2, dy2)
                     if 0 < d < MIN_ENEMY_SEPARATION:
                         rx, ry = dx2/d, dy2/d
@@ -495,10 +473,12 @@ while True:
             e.rect.x += mvx
             e.rect.y += mvy
 
-            hit_chair = pygame.sprite.spritecollideany(e, chairs)
+            hit_chair = pygame.sprite.spritecollideany(e, chairs,
+                                                      pygame.sprite.collide_mask)
             if hit_chair and now - hit_chair.spawn_time >= CHAIR_INVINCIBILITY:
                 hit_chair.kill()
 
+        # drop chairs
         if now - last_chair_drop >= CHAIR_DROP_INTERVAL:
             for e in enemies:
                 if random.random() < CHAIR_DROP_CHANCE:
@@ -506,17 +486,21 @@ while True:
                     chairs.add(chair); all_sprites.add(chair)
             last_chair_drop = now
 
+        # update thieves
         for t in thieves:
             t.update()
 
+        # pickup parts
+        hit = None
         if not player.carrying:
-            hit = pygame.sprite.spritecollideany(player, parts)
+            hit = pygame.sprite.spritecollideany(player, parts,
+                                                pygame.sprite.collide_mask)
             if hit:
                 current_carried_img = hit.image
                 hit.kill()
                 player.carrying = True
         else:
-            if delay_event is None and pygame.sprite.collide_rect(player, cashier):
+            if delay_event is None and pygame.sprite.collide_rect(player,cashier):
                 if random.random() < LINE_PROBABILITY:
                     delay_event = {
                         'start_time': now,
@@ -524,89 +508,95 @@ while True:
                     }
                 else:
                     handle_delivery()
-            elif delay_event and pygame.sprite.collide_rect(player, cashier):
+            elif delay_event and pygame.sprite.collide_rect(player,cashier):
                 elapsed = now - delay_event['start_time']
                 if elapsed >= WAIT_TIME or now >= delay_event['next_available_time']:
-                   	handle_delivery()
+                    handle_delivery()
 
+        # spawn/pickup boomerang
         if now - last_boom_spawn >= BOOMERANG_SPAWN_INTERVAL:
             if (random.random() < BOOMERANG_SPAWN_CHANCE
                 and not boomerangs and not player.has_boomerang):
-                bx = random.randint(50, WIDTH-50)
-                by = random.randint(50, HEIGHT-50)
-                b  = BoomerangItem((bx,by))
+                bx, by = (random.randint(50,WIDTH-50),
+                          random.randint(50,HEIGHT-50))
+                b = BoomerangItem((bx,by))
                 boomerangs.add(b); all_sprites.add(b)
             last_boom_spawn = now
 
+        hit_b = None
         if not player.has_boomerang and not boomerang_projectiles:
-            hit_b = pygame.sprite.spritecollideany(player, boomerangs)
+            hit_b = pygame.sprite.spritecollideany(player, boomerangs,
+                                                  pygame.sprite.collide_mask)
             if hit_b:
-               	player.has_boomerang = True
+                player.has_boomerang = True
                 hit_b.kill()
 
         for proj in boomerang_projectiles:
             proj.update()
 
+        # spawn/pickup speed-boost
         if now - last_speed_spawn >= SPEEDBOOST_SPAWN_INTERVAL:
             if random.random() < SPEEDBOOST_SPAWN_CHANCE and not speed_items:
-                sx = random.randint(50, WIDTH-50)
-                sy = random.randint(50, HEIGHT-50)
+                sx, sy = (random.randint(50,WIDTH-50),
+                          random.randint(50,HEIGHT-50))
                 sb = SpeedBoostItem((sx,sy))
                 speed_items.add(sb); all_sprites.add(sb)
             last_speed_spawn = now
 
-        hit_sb = pygame.sprite.spritecollideany(player, speed_items)
+        hit_sb = pygame.sprite.spritecollideany(player, speed_items,
+                                                pygame.sprite.collide_mask)
         if hit_sb:
             hit_sb.kill()
             player.speed_multiplier = SPEEDBOOST_MULTIPLIER
             player.boost_end_time   = now + SPEEDBOOST_DURATION
 
+        # respawn enemies
         for ts in respawns[:]:
             if now >= ts:
                 while True:
-                    ex = random.randint(50, WIDTH-50)
-                    ey = random.randint(50, HEIGHT-50)
-                    if math.hypot(ex - player.rect.centerx, ey - player.rect.centery) > 150:
+                    ex = random.randint(50,WIDTH-50)
+                    ey = random.randint(50,HEIGHT-50)
+                    if math.hypot(ex-player.rect.centerx,
+                                  ey-player.rect.centery)>150:
                         break
-                new_e = Enemy((ex, ey))
+                new_e = Enemy((ex,ey))
                 enemies.add(new_e); all_sprites.add(new_e)
                 respawns.remove(ts)
 
-        if pygame.sprite.spritecollideany(player, enemies):
+        # game over
+        if pygame.sprite.spritecollideany(player, enemies,
+                                          pygame.sprite.collide_mask):
             game_over = True
 
-    # ── Rendering ───────────────────────────────────────────────────────────────
+    # ── Render ─────────────────────────────────────────────────────────────────
     screen.blit(background, (0,0))
 
     for part in parts:
         glow_rect = part.glow.get_rect(center=part.rect.center)
         screen.blit(part.glow, glow_rect)
-
     for chair in chairs:
         glow_rect = chair.glow.get_rect(center=chair.rect.center)
         screen.blit(chair.glow, glow_rect)
-
     for b in boomerangs:
         glow_rect = b.glow.get_rect(center=b.rect.center)
         screen.blit(b.glow, glow_rect)
-
     for sb in speed_items:
         glow_rect = sb.glow.get_rect(center=sb.rect.center)
         screen.blit(sb.glow, glow_rect)
 
     all_sprites.draw(screen)
 
-    # draw thief-carried parts above head
+    # thief-carried part above head
     for t in thieves:
         if t.carrying and t.carried_image:
             tx = t.rect.centerx - t.carried_image.get_width()//2
             ty = t.rect.top - t.carried_image.get_height() - 5
             screen.blit(t.carried_image, (tx, ty))
 
-    # draw player-carried part
+    # player-carried part above head
     if player.carrying and current_carried_img:
         px = player.rect.centerx - current_carried_img.get_width()//2
-        py = player.rect.top   - current_carried_img.get_height() - 5
+        py = player.rect.top - current_carried_img.get_height() - 5
         screen.blit(current_carried_img, (px, py))
 
     hud = font.render(f"Score: {delivered}", True, TEXT_COLOR)
@@ -614,34 +604,31 @@ while True:
 
     if player.has_boomerang:
         icon = pygame.transform.scale(BOOMERANG_IMAGE, (24,24))
-        screen.blit(icon, (10 + hud.get_width() + 10, 8))
-
+        screen.blit(icon, (10 + hud.get_width()+10, 8))
     if pygame.time.get_ticks() < player.boost_end_time:
         sb_icon = pygame.transform.scale(NOS_IMAGE, (24,24))
-        screen.blit(sb_icon, (10 + hud.get_width() + 40, 8))
+        screen.blit(sb_icon, (10 + hud.get_width()+40, 8))
 
-    if delay_event and player.carrying and pygame.sprite.collide_rect(player, cashier):
+    if delay_event and player.carrying and pygame.sprite.collide_rect(player,cashier):
         banner = pygame.Surface((WIDTH,80), pygame.SRCALPHA)
         banner.fill((0,0,0,180))
-        screen.blit(banner, (0, HEIGHT//2 - 40))
+        screen.blit(banner, (0, HEIGHT//2-40))
         elapsed   = now - delay_event['start_time']
-        remaining = max(0, WAIT_TIME - elapsed)
-        secs      = (remaining + 999)//1000
-        msg_text  = f"Long line… wait {secs}s or leave & return"
-        msg       = font.render(msg_text, True, LONG_LINE_COLOR)
+        remaining = max(0, WAIT_TIME- elapsed)
+        secs      = (remaining+999)//1000
+        msg       = font.render(f"Long line… wait {secs}s or leave & return",
+                                True, LONG_LINE_COLOR)
         mx = WIDTH//2 - msg.get_width()//2
         my = HEIGHT//2 - msg.get_height()//2
         screen.blit(msg, (mx, my))
-        bx, by = WIDTH//2 - 150, my + msg.get_height() + 10
-        pygame.draw.rect(screen, (100,100,100), (bx, by, 300, 20))
-        prog = min(1, elapsed / WAIT_TIME)
-        pygame.draw.rect(screen, LONG_LINE_COLOR, (bx, by, 300*prog, 20))
+        bx, by = WIDTH//2-150, my+msg.get_height()+10
+        pygame.draw.rect(screen,(100,100,100),(bx, by, 300,20))
+        prog = min(1, elapsed/WAIT_TIME)
+        pygame.draw.rect(screen,LONG_LINE_COLOR,(bx,by,300*prog,20))
 
     if game_over:
-        over = font.render(
-            "Game Over! You got caught!  Press ENTER to restart.",
-            True, TEXT_COLOR
-        )
+        over = font.render("Game Over! You got caught! Press ENTER to restart.",
+                           True, TEXT_COLOR)
         ox = WIDTH//2 - over.get_width()//2
         oy = HEIGHT//2
         screen.blit(over, (ox, oy))
