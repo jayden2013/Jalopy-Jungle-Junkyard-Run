@@ -53,6 +53,8 @@ BOSS_SPRINT_SPEED      = 10      # px per frame
 BOSS_PURSUIT_SPEED     = 1
 BOSS_CHAIR_INTERVAL    = 2000    # ms between boss chair throws
 BOSS_HIT_POINTS        = 5       # hits to kill boss
+BOSS_STOP_DURATION     = 2000    # ms to charge up sprint
+BOSS_SPRINT_DURATION   = 1000    # ms to sprint toward player
 
 # Colors
 BG_COLOR         = (50, 50, 50)
@@ -360,7 +362,7 @@ class SuperBoomer(pygame.sprite.Sprite):
         self.rect  = self.image.get_rect(center=(WIDTH//2, HEIGHT//2))
         self.mask  = pygame.mask.from_surface(self.image)
         self.health          = BOSS_HIT_POINTS
-        self.state           = "charging"
+        self.state           = "walking"
         self.state_start     = pygame.time.get_ticks()
         self.last_chair_throw= pygame.time.get_ticks()
         self.sprint_dir = (0,0)
@@ -368,54 +370,46 @@ class SuperBoomer(pygame.sprite.Sprite):
     def update(self):
         now = pygame.time.get_ticks()
 
-        # State machine for charging, sprinting, and pursuit
-        if self.state == "charging":
-            # After charge time, begin sprint attack
-            if now - self.state_start >= BOSS_CHARGE_TIME:
-                # lock onto player's position
-                px, py = player.rect.center
-                dx = px - self.rect.centerx
-                dy = py - self.rect.centery
-                dir_x, dir_y = normalize(dx, dy)
-                self.sprint_dir    = (dir_x, dir_y)
-                self.sprint_target = (px, py)
-                self.state = "sprinting"
-                self.state_start = now
-
-        elif self.state == "sprinting":
-            # sprint along locked direction
-            self.rect.x += self.sprint_dir[0] * BOSS_SPRINT_SPEED
-            self.rect.y += self.sprint_dir[1] * BOSS_SPRINT_SPEED
-            # clamp on-screen
-            self.rect.x = max(0, min(self.rect.x, WIDTH - self.rect.width))
-            self.rect.y = max(0, min(self.rect.y, HEIGHT - self.rect.height))
-            # check if reached target
-            tx, ty = self.sprint_target
-            if math.hypot(self.rect.centerx - tx, self.rect.centery - ty) < BOSS_SPRINT_SPEED:
-                self.state       = "pursuing"
-                self.state_start = now
-
-        elif self.state == "pursuing":
-            # Move toward the player
+        # 1) WALKING: slow constant pursuit
+        if self.state == "walking":
             dx = player.rect.centerx - self.rect.centerx
             dy = player.rect.centery - self.rect.centery
-            dist = math.hypot(dx, dy)
-            if dist != 0:
-                self.rect.x += BOSS_PURSUIT_SPEED * dx / dist
-                self.rect.y += BOSS_PURSUIT_SPEED * dy / dist
-            # Clamp inside screen bounds
-            self.rect.x = max(0, min(self.rect.x, WIDTH - self.rect.width))
-            self.rect.y = max(0, min(self.rect.y, HEIGHT - self.rect.height))
-            # After cooldown, go back to charging for the next attack
-            if now - self.state_start >= BOSS_CHARGE_TIME:
+            dist = math.hypot(dx, dy) or 1
+            # move slowly toward player
+            self.rect.x += (dx/dist) * BOSS_PURSUIT_SPEED
+            self.rect.y += (dy/dist) * BOSS_PURSUIT_SPEED
+
+            # after walking long enough, go charge
+            if now - self.state_start >= BOSS_STOP_DURATION:
                 self.state = "charging"
                 self.state_start = now
 
-        # Continue throwing chairs on interval
+        # 2) CHARGING: stand still, lock sprint direction
+        elif self.state == "charging":
+            if now - self.state_start >= BOSS_CHARGE_TIME:
+                px, py = player.rect.center
+                dx, dy = px - self.rect.centerx, py - self.rect.centery
+                self.sprint_dir = normalize(dx, dy)
+                self.state = "sprinting"
+                self.state_start = now
+
+        # 3) SPRINTING: burst of speed along that locked vector
+        elif self.state == "sprinting":
+            self.rect.x += self.sprint_dir[0] * BOSS_SPRINT_SPEED
+            self.rect.y += self.sprint_dir[1] * BOSS_SPRINT_SPEED
+            # clamp to screen
+            self.rect.x = max(0, min(self.rect.x, WIDTH - self.rect.width))
+            self.rect.y = max(0, min(self.rect.y, HEIGHT - self.rect.height))
+
+            # once sprint duration is up, go back to walking
+            if now - self.state_start >= BOSS_SPRINT_DURATION:
+                self.state = "walking"
+                self.state_start = now
+
+        # 4) Throw chairs regardless of state
         if now - self.last_chair_throw >= BOSS_CHAIR_INTERVAL:
             c = Chair(self.rect.center)
-            chairs.add(c)
-            all_sprites.add(c)
+            chairs.add(c); all_sprites.add(c)
             self.last_chair_throw = now
 
 # ─── Handlers ─────────────────────────────────────────────────────────────────
