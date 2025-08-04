@@ -46,7 +46,7 @@ SPEEDBOOST_DURATION       = 10000
 SPEEDBOOST_MULTIPLIER     = 2.0
 
 # Super Boomer boss settings
-BOSS_SPAWN_COUNT       = 1       # every 7 deliveries
+BOSS_SPAWN_COUNT       = 10       # every 10 deliveries
 WARNING_DURATION       = 1000    # ms of "SUPER BOOMER!" warning
 BOSS_CHARGE_TIME       = 3000    # ms to charge before sprint
 BOSS_SPRINT_SPEED      = 10      # px per frame
